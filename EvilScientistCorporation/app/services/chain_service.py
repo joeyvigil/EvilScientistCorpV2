@@ -19,9 +19,16 @@ prompt = ChatPromptTemplate.from_messages([
     ("user", "{input}")
 ])
 
-
 # Basic general chain here
+def get_general_chain():
+    
+    # This basic chain is just:
+        # The llm we're talking to
+        # The prompt we're sending to the llm
+        # We defined both of these above!!
+    chain = llm | prompt
 
+    return chain
 
 # More sequential chain that refines the answer more
 
