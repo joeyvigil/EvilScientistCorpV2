@@ -1,6 +1,7 @@
 # This service module will store logic that returns chains
 # a chain in LangChain is just a sequence of actions/info that we send to an LLM
 # all in the hopes of getting an appropriate response
+from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_ollama import ChatOllama
 
@@ -21,14 +22,15 @@ prompt = ChatPromptTemplate.from_messages([
 
 # Basic general chain here
 def get_general_chain():
-    
+
     # This basic chain is just:
-        # The llm we're talking to
         # The prompt we're sending to the llm
+        # The llm we're talking to
         # We defined both of these above!!
-    chain = llm | prompt
+    chain = prompt | llm
 
     return chain
+
 
 # More sequential chain that refines the answer more
 
