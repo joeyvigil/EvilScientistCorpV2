@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+from pydantic import BaseModel
 
 from app.services.chain_service import get_general_chain
 
@@ -10,7 +11,7 @@ router = APIRouter(
 
 # I'm going to make a model right here - we don't need to import it around
 # So I'll skip making a dedicated model.py file
-class ChatInputModel:
+class ChatInputModel(BaseModel):
     input:str
 
 # Import the chain-creation functions from the chain service here
