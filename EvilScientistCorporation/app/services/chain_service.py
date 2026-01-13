@@ -36,7 +36,4 @@ def get_general_chain():
 # More sequential chain that refines the answer more
 
 
-# A chain that focuses only on math operations
-
-
-# Rome Italy is a city in Modena Italy known for its classical architecture and rich history.
+# A chain that is better equipped to remember the conversation (memory)
