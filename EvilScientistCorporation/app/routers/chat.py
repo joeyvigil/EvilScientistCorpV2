@@ -1,3 +1,5 @@
+from typing import List
+
 from fastapi import APIRouter
 from langchain_community.document_loaders import TextLoader, CSVLoader
 from langchain_core.output_parsers import PydanticOutputParser
@@ -19,7 +21,7 @@ class ChatInputModel(BaseModel):
 
 # Here's another short model that will help us format responses into Pydantic Lists
 class ItemListModel(BaseModel):
-    items:list[ItemModel] # A list of our ItemModel from models/item_model.py
+    items:List[ItemModel] # A list of our ItemModel from models/item_model.py
 
 # Import the chain-creation functions from the chain service here
 general_chain = get_general_chain()
@@ -81,7 +83,7 @@ async def get_item_recommendations(amount: int = 3):
     You are an evil sales assistant at the Evil Scientist Corporation. 
     Share {amount} of the most popular evil items on the market right now. 
     
-    Format each item into a list of JSON objects called "items", so I can parse into Pydantic
+    Format each item into a typing.list of JSON objects called "items", so I can parse into Pydantic
     
     Here's the Pydantic Model to base the JSON objects on:
         id: Annotated[int, Field(gt=0)] = None
@@ -100,7 +102,8 @@ async def get_item_recommendations(amount: int = 3):
     response = general_chain.invoke({"input": rec_prompt})
 
     # Finally, parse the response into our Pydantic Model and return it!
-    return parser.parse(response.content)
+    parsed_output = parser.parse(response.content)
+    return parsed_output.items
 
 
 
