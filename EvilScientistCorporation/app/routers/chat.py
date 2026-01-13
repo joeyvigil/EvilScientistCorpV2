@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from langchain_community.document_loaders import TextLoader, CSVLoader
+from langchain_core.output_parsers import PydanticOutputParser
 from pydantic import BaseModel
 
 from app.models.item_model import ItemModel
@@ -92,8 +93,14 @@ async def get_item_recommendations(amount: int = 3):
     Return ONLY the JSON, no extra text.
     """
 
+    # Pydantic has its own output parser in LangChain
+    parser = PydanticOutputParser(pydantic_object=ItemListModel)
 
+    # This time, we'll actually save the response
+    response = general_chain.invoke({"input": rec_prompt})
 
+    # Finally, parse the response into our Pydantic Model and return it!
+    return parser.parse(response.content)
 
 
 
