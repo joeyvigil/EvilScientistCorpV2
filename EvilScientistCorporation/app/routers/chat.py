@@ -2,6 +2,7 @@ from fastapi import APIRouter
 from langchain_community.document_loaders import TextLoader, CSVLoader
 from pydantic import BaseModel
 
+from app.models.item_model import ItemModel
 from app.services.chain_service import get_general_chain
 
 #Typical Router setup
@@ -14,6 +15,10 @@ router = APIRouter(
 # So I'll skip making a dedicated model.py file
 class ChatInputModel(BaseModel):
     input:str
+
+# Here's another short model that will help us format responses into Pydantic Lists
+class ItemListModel(BaseModel):
+    items:list[ItemModel] # A list of our ItemModel from models/item_model.py
 
 # Import the chain-creation functions from the chain service here
 general_chain = get_general_chain()
@@ -61,4 +66,67 @@ async def analyze_data(chat:ChatInputModel):
                      f"Here's the sales data: "
                      f"{sales_data_csv}"
         }
-    )
+    ).content
+
+
+# OUTPUT PARSER EXAMPLE: An endpoint that sends item recs based on our Pydantic ItemModel
+# We're going to parse the LLM's output into a Pydantic model
+@router.get("/recommendations")
+async def get_item_recommendations(amount: int = 3):
+
+    # I'm going the prompt here, instead of in the invocation
+    # I prefer to do it this way if the prompt is long
+    rec_prompt = f"""
+    You are an evil sales assistant at the Evil Scientist Corporation. 
+    Share {amount} of the most popular evil items on the market right now. 
+    
+    Format each item into a list of JSON objects called "items", so I can parse into Pydantic
+    
+    Here's the Pydantic Model to base the JSON objects on:
+        id: Annotated[int, Field(gt=0)] = None
+        name: Annotated[str, Field(min_length=3, max_length=50)]
+        description: Annotated[str, Field(min_length=10, max_length=100)]
+        inventory: Annotated[int, Field(ge=0, le=100)]
+        price: Annotated[float, Field(gt=0)]
+    
+    Return ONLY the JSON, no extra text.
+    """
+
+
+
+
+
+
+
+# You can ignore this - I stole it from Shane for week 4 cuz I liked it
+# @tool
+# def fetch_from_map_wrapper(*args, **kwargs):
+#     """
+#     takes in a list of items to search through as the first argument,
+#     then the key word arguments for the attributes of the object you want to find.
+#     """
+#     fetch_from_map(*args, **kwargs)
+#
+# tools = [fetch_from_map_wrapper]
+# llm_with_tools = llm.bind_tools(tools)
+
+
+#
+# def fetch_from_map(my_list: list, func=None, **kwargs) -> list:
+#     if not isinstance(my_list, list):
+#         # print("not a list")
+#         return []
+#
+#     if func is None:
+#         # print("new function")
+#         def func(k, v, x):
+#             # print(f"{k}: {v} -> {x.dict()}")
+#             return x.dict().get(k) == v
+#
+#     reduced = list(my_list)
+#     # print(reduced)
+#     for k, v in kwargs.items():
+#         reduced = filter(partial(func, k, v), reduced)
+#         # print(list(reduced))
+#
+#     return list(reduced)
