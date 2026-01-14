@@ -6,7 +6,7 @@ from langchain_core.output_parsers import PydanticOutputParser
 from pydantic import BaseModel
 
 from app.models.item_model import ItemModel
-from app.services.chain_service import get_general_chain
+from app.services.chain_service import get_general_chain, get_memory_chain
 
 #Typical Router setup
 router = APIRouter(
@@ -25,6 +25,7 @@ class ItemListModel(BaseModel):
 
 # Import the chain-creation functions from the chain service here
 general_chain = get_general_chain()
+memory_chain = get_memory_chain()
 
 # Generic chatbot-esque endpoint
 @router.post("/")
@@ -111,6 +112,11 @@ async def get_item_recommendations(amount: int = 3):
     return parsed_output.items
 
 
+# MEMORY EXAMPLE - This endpoint uses our memory chain for better conversational memory
+@router.post("/memory-chat")
+async def chat_with_memory(chat:ChatInputModel):
+    # That's it! The chain will remember the last "k" interactions automatically
+    memory_chain.invoke(input=chat.input)
 
 
 # You can ignore this - I stole it from Shane for week 4 cuz I liked it
