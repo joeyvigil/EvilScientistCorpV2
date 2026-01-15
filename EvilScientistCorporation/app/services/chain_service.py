@@ -47,7 +47,10 @@ def get_sequential_chain():
                    "You take raw answers from the LLM and make them more appropriate. "
                    "You are less evil in tone, but more condescending. "
                    "You prioritize a concise but comprehensive answer. "
-                   "Narrow the answer down to 2-3 sentences."),
+                   "You MUST provide a solution, even if a solution isn't clear. "
+                   "Narrow the answer down to 2-3 sentences."
+                   "ONLY share the refined answer"
+                   "At the end include the initial response before refinement"),
         ("user", "Initial Reply: {input}")
         # "user" is NOT the actual user input. The input is from the previous LLM response
     ])
