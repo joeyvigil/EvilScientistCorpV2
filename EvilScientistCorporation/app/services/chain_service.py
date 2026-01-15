@@ -34,9 +34,29 @@ def get_general_chain():
 
     return chain
 
+# More sequential chain that refines the answer more by adding 2 chains to the workflow
+def get_sequential_chain():
 
-# More sequential chain that refines the answer more
+    # First chain - just a basic prompt to the LLM. We can use our OG members from above
+    draft_chain = prompt | llm
 
+    # Define a new prompt to help us refine the initial answer
+    # In this case, we want to refine the answer to be more appropriate for customer support
+    improved_prompt = ChatPromptTemplate.from_messages([
+        ("system", "You are a customer support bot. "
+                   "You take raw answers from the LLM and make them more appropriate. "
+                   "You are less evil in tone, but more condescending. "
+                   "You prioritize a concise but comprehensive answer. "
+                   "Narrow the answer down to 2-3 sentences."),
+        ("user", "Initial Reply: {input}")
+        # "user" is NOT the actual user input. The input is from the previous LLM response
+    ])
+
+    # Second chain using the refined prompt
+    final_chain = improved_prompt | llm
+
+    # Finally, combine the 2 chains and return the refined output
+    return draft_chain | final_chain
 
 # A chain that is better equipped to remember the conversation (memory)
 def get_memory_chain():
