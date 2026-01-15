@@ -6,7 +6,8 @@ from langchain_core.output_parsers import PydanticOutputParser
 from pydantic import BaseModel
 
 from app.models.item_model import ItemModel
-from app.services.chain_service import get_general_chain, get_memory_chain, get_sequential_chain
+from app.services.chain_service import get_general_chain, get_memory_chain, get_sequential_chain, \
+    get_bad_word_filter_chain
 
 #Typical Router setup
 router = APIRouter(
@@ -27,6 +28,7 @@ class ItemListModel(BaseModel):
 general_chain = get_general_chain()
 memory_chain = get_memory_chain()
 sequential_chain = get_sequential_chain()
+transform_chain = get_bad_word_filter_chain()
 
 # Generic chatbot-esque endpoint
 @router.post("/")
@@ -127,9 +129,12 @@ async def customer_support_chat(chat:ChatInputModel):
     # Just using a different chain
     return sequential_chain.invoke(input=chat.input)
 
+# USING OUR TRANSFORM CHAIN
+@router.post("/censored-chat")
+async def censored_chat(chat:ChatInputModel):
 
-
-
+    # Another basic one liner, just using a different chain
+    return transform_chain.invoke(input=chat.input)
 
 
 
