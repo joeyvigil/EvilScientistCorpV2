@@ -5,7 +5,7 @@ from fastapi import FastAPI, HTTPException
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
-from app.routers import users, items, chat
+from app.routers import users, items, chat, vector_ops
 from app.services.vectordb_service import init_vector_store
 
 
@@ -40,6 +40,7 @@ async def custom_http_exception_handler(request:Request, exception:HTTPException
 app.include_router(users.router)
 app.include_router(items.router)
 app.include_router(chat.router)
+app.include_router(vector_ops.router)
 
 # Generic sample endpoint (GET request that just returns a message)
 @app.get("/")

@@ -1,4 +1,6 @@
 # This service will help us initialize and interact with a ChromaDB vector database
+from typing import Any
+
 from langchain_chroma import Chroma
 from langchain_community.embeddings import OllamaEmbeddings
 from langchain_core.documents import Document
@@ -29,7 +31,7 @@ def get_vector_store() -> Chroma:
 
 
 # Ingest documents into the vector store (this is where the embeddings happen)
-def ingest_items(items: list[dict[str, any]]) -> int:
+def ingest_items(items: list[dict[str, Any]]) -> int:
 
     # Get an instance of the vector store
     db_instance = get_vector_store()
@@ -47,7 +49,7 @@ def ingest_items(items: list[dict[str, any]]) -> int:
     return len(items)
 
 # Search the vector store for similar or relevant documents based on a query
-def search(query: str, k: int = 3) -> list[dict[str,any]]:
+def search(query: str, k: int = 3) -> list[dict[str,Any]]:
 
     # Get an instance of the vector store
     db_instance = get_vector_store()
