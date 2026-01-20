@@ -31,5 +31,5 @@ async def ingest(items:list[IngestItem]):
 
 # Endpoint for similarity search
 @router.post("/search")
-async def similarity_search(request:SearchRequest):
+async def items_similarity_search(request:SearchRequest):
     return search(request.query, request.k)

@@ -7,28 +7,24 @@ from langchain_core.documents import Document
 
 PERSIST_DIRECTORY = "app/chroma_store" # Where the DB will be stored on disk
 COLLECTION = "evil_items" # What kind of data we're storing (like the tables in SQL)
+EMBEDDING = OllamaEmbeddings(model="nomic-embed-text") # The embedding model to use
 
-# The actual chroma vector store itself
-# This will be the chroma instance OR no value at all
-vector_store: Chroma | None = None
-
-# Initialize the ChromaDB vector store
-def init_vector_store():
-    # Use the global instance defined above to accomplish Singleton behavior
-    global vector_store
-
-    if vector_store is None:
-        vector_store = Chroma(
-            collection_name=COLLECTION,
-            persist_directory=PERSIST_DIRECTORY,
-            embedding_function=OllamaEmbeddings(model="nomic-embed-text")
-        )
+# The actual chroma vector store itself is a dict that holds Chroma instances
+# This allows us to manage multiple collections at once
+vector_store: dict[str, Chroma] = {}
 
 # Get an instance of the Chroma vector store (lets us interact with the DB instance)
-def get_vector_store() -> Chroma:
-    # We could raise an Exception here if vector_store is None
-    return vector_store
-
+# Takes in a collection to use, or defaults to COLLECTION ("evil_items")
+def get_vector_store(collection:str = COLLECTION) -> Chroma:
+    # Get (or create) the vector store instance
+    # If creating, define the collection name, persist directory, and embedding function
+    if collection not in vector_store:
+        vector_store[collection] = Chroma(
+            collection_name=COLLECTION,
+            persist_directory=PERSIST_DIRECTORY,
+            embedding_function=EMBEDDING
+        )
+    return vector_store[collection]
 
 # Ingest documents into the vector store (this is where the embeddings happen)
 def ingest_items(items: list[dict[str, Any]]) -> int:
@@ -55,13 +51,14 @@ def search(query: str, k: int = 3) -> list[dict[str,Any]]:
     db_instance = get_vector_store()
 
     # Save the results of the similarity search
-    results = db_instance.similarity_search(query, k=k)
+    results = db_instance.similarity_search_with_score(query, k=k)
 
     # Return the results as a list of dicts with the expected fields
     return [
         {
-            "text": result.page_content,
-            "metadata": result.metadata
+            "text": result[0].page_content,
+            "metadata": result[0].metadata,
+            "score": result[1]
         }
         for result in results
     ]
