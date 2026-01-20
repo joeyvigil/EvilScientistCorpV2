@@ -27,10 +27,10 @@ def get_vector_store(collection:str = COLLECTION) -> Chroma:
     return vector_store[collection]
 
 # Ingest documents into the vector store (this is where the embeddings happen)
-def ingest_items(items: list[dict[str, Any]]) -> int:
+def ingest_items(items: list[dict[str, Any]], collection:str = COLLECTION) -> int:
 
     # Get an instance of the vector store
-    db_instance = get_vector_store()
+    db_instance = get_vector_store(collection)
 
     # Turn the input into a list of documents to get inserted
     docs = [
@@ -45,10 +45,10 @@ def ingest_items(items: list[dict[str, Any]]) -> int:
     return len(items)
 
 # Search the vector store for similar or relevant documents based on a query
-def search(query: str, k: int = 3) -> list[dict[str,Any]]:
+def search(query: str, k: int = 3, collection:str = COLLECTION) -> list[dict[str,Any]]:
 
     # Get an instance of the vector store
-    db_instance = get_vector_store()
+    db_instance = get_vector_store(collection)
 
     # Save the results of the similarity search
     results = db_instance.similarity_search_with_score(query, k=k)

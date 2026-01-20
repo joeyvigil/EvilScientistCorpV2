@@ -22,14 +22,14 @@ class SearchRequest(BaseModel):
     k:int = 3
 
 # Endpoint for data ingestion
-@router.post("/ingest")
-async def ingest(items:list[IngestItem]):
+@router.post("/ingest-items")
+async def ingest_items(items:list[IngestItem]):
 
     # Call the service method to ingest items
     count = ingest_items([item.model_dump() for item in items])
     return {"ingested:":count}
 
 # Endpoint for similarity search
-@router.post("/search")
+@router.post("/search-items")
 async def items_similarity_search(request:SearchRequest):
     return search(request.query, request.k)
