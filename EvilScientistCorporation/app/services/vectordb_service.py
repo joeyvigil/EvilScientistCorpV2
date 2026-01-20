@@ -4,6 +4,7 @@ from typing import Any
 from langchain_chroma import Chroma
 from langchain_community.embeddings import OllamaEmbeddings
 from langchain_core.documents import Document
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 PERSIST_DIRECTORY = "app/chroma_store" # Where the DB will be stored on disk
 COLLECTION = "evil_items" # What kind of data we're storing (like the tables in SQL)
@@ -48,13 +49,24 @@ def ingest_items(items: list[dict[str, Any]], collection:str = COLLECTION) -> in
 def ingest_text(text:str) -> int:
 
     # Strip the string, removing whitespace from the ends
+    text = text.strip()
+    if not text:
+        return 0 # If there's nothing to ingest, end the function here and return 0
 
     # Chunk the raw text into smaller pieces for better embedding
-    # Using a LangChain Transformer
+    # Using a LangChain Transformer (RecursiveCharacterTextSplitter)
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=600, # max size of each chunk - 600 chars (~2 paragraphs)
+        chunk_overlap=100, # how much each chunk overlaps - 100 chars (helps retain context)
+        separators=["\n\n", "\n", " ", ""] # preferred split points
+        # (double new line, single new line, space, then any char
+    )
 
     # Get our chunks as a list[str] so we can iterate over them and reformat them
+    chunks = splitter.split_text(text)
 
     # Finally, call ingest_items() now that we have a structured object for embedding
+    # return ingest_items(items, collection="boss_plans")
 
 
 # Search the vector store for similar or relevant documents based on a query
