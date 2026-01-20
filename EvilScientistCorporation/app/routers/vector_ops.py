@@ -22,8 +22,8 @@ class SearchRequest(BaseModel):
     k:int = 3
 
 # Endpoint for data ingestion
-@router.post("/ingest-items")
-async def ingest_items(items:list[IngestItem]):
+@router.post("/ingest-json")
+async def ingest_json(items:list[IngestItem]):
 
     # Call the service method to ingest items
     count = ingest_items([item.model_dump() for item in items])

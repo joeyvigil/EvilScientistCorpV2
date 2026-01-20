@@ -6,7 +6,6 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse
 
 from app.routers import users, items, chat, vector_ops
-from app.services.vectordb_service import init_vector_store
 
 # Set up FastAPI. We'll use this "app" variable to do FastAPI stuff below
 app = FastAPI()
