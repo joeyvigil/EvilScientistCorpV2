@@ -1,4 +1,5 @@
 # This service will help us initialize and interact with a ChromaDB vector database
+import hashlib
 from typing import Any
 
 from langchain_chroma import Chroma
@@ -21,7 +22,7 @@ def get_vector_store(collection:str = COLLECTION) -> Chroma:
     # If creating, define the collection name, persist directory, and embedding function
     if collection not in vector_store:
         vector_store[collection] = Chroma(
-            collection_name=COLLECTION,
+            collection_name=collection,
             persist_directory=PERSIST_DIRECTORY,
             embedding_function=EMBEDDING
         )
@@ -66,7 +67,28 @@ def ingest_text(text:str) -> int:
     chunks = splitter.split_text(text)
 
     # Finally, call ingest_items() now that we have a structured object for embedding
-    # return ingest_items(items, collection="boss_plans")
+    items = []
+
+    # What's enumerate? Give us a (index, value) pair when iterating over a list
+    for index, chunk in enumerate(chunks):
+
+        # Define and attach a stable-ish ID so reingestion doesn't create duplicates
+        content_hash = hashlib.md5(chunk.encode("utf-8")).hexdigest()[:8]
+        chunk_id = f"chunk_{content_hash}"
+        # This^ will look like "chunk_a1b2c3d4"
+
+        # Append the chunk to the items list with ID and metadata
+        items.append({
+            "id":chunk_id,
+            "text":chunk,
+            "metadata":{
+                "chunk_index":index,
+                "source":"raw_text_ingestion" # Helps with filtering information in queries
+            }
+        })
+
+    # Finally, send the new structured items to our original ingest_items function
+    return ingest_items(items, collection="boss_plans")
 
 
 # Search the vector store for similar or relevant documents based on a query
