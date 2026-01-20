@@ -57,8 +57,8 @@ def ingest_text(text:str) -> int:
     # Chunk the raw text into smaller pieces for better embedding
     # Using a LangChain Transformer (RecursiveCharacterTextSplitter)
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=600, # max size of each chunk - 600 chars (~2 paragraphs)
-        chunk_overlap=100, # how much each chunk overlaps - 100 chars (helps retain context)
+        chunk_size=100, # max size of each chunk - 600 chars (~2 paragraphs)
+        chunk_overlap=15, # how much each chunk overlaps - 100 chars (helps retain context)
         separators=["\n\n", "\n", " ", ""] # preferred split points
         # (double new line, single new line, space, then any char
     )
