@@ -61,7 +61,7 @@ def ingest_text(text:str) -> int:
     # Using a LangChain Transformer (RecursiveCharacterTextSplitter)
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=500, # max size of each chunk - 500 chars (~2 paragraphs)
-        chunk_overlap=50, # how much each chunk overlaps - 50 chars (helps retain context)
+        chunk_overlap=100, # how much each chunk overlaps - 100 chars (helps retain context)
         separators=["\n\n", "\n", " ", ""] # preferred split points
         # (double new line, single new line, space, then any char
     )
