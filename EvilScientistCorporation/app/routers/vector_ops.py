@@ -79,5 +79,16 @@ async def ner_search_plans(request:SearchRequest):
     # Collect the extracted entities from the model
     entities = extract_entities(combined_text)
 
-    # FOR NOW: just return the entities
-    return entities
+    # # FOR NOW: just return the entities
+    # return entities
+
+    # Create a new prompt for our LLM and tell it help us with classification
+    # Another example of RAG - we're retrieving info that will augment the response
+    prompt = (
+        f"Based on the following extracted entities from a boss's evil plans,"
+        f"{entities}\n"
+        f"Answer the User's NER-based question with ONLY the data you see here"
+        f"User query: {request.query}"
+    )
+
+    return chain.invoke({"input":prompt})
