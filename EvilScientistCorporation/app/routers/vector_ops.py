@@ -4,7 +4,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 
 from app.services.chain_service import get_general_chain
-from app.services.vectordb_service import ingest_items, search, ingest_text
+from app.services.vectordb_service import ingest_items, search, ingest_text, extract_entities
 
 router = APIRouter(
     prefix="/vector-ops",
@@ -65,3 +65,19 @@ async def search_plans(request:SearchRequest):
 
     # Invoke our general chain from chain_service
     return chain.invoke({"input":prompt})
+
+# Endpoint that uses NER to extract entities from our "boss-plans" collection
+@router.post("/ner-search-plans")
+async def ner_search_plans(request:SearchRequest):
+
+    # Extract search results from vector DB as usual
+    result = search(request.query, request.k, collection="boss_plans")
+
+    # Combine the text content from the results to feed into the NER model
+    combined_text = " ".join(item["text"] for item in result)
+
+    # Collect the extracted entities from the model
+    entities = extract_entities(combined_text)
+
+    # FOR NOW: just return the entities
+    return entities
