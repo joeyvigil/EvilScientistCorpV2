@@ -1,8 +1,18 @@
 from typing import TypedDict, Any
 
+from langchain_ollama import ChatOllama
+
+from app.services.vectordb_service import search
+
 
 # This service will define the State, Nodes, and Graph for our LangGraph implementation
 
+
+# Define the LLM we're going to use
+llm = ChatOllama(
+    model="llama3.2:3b", # The model we're using (we installed llama3.2:3b)
+    temperature=0.2 # Temp goes from 0-1. Higher temp = more creativity
+)
 
 # First, we'll define the State of our Graph
 # You can think of State like a container for global data. The "state" of the app.
@@ -48,8 +58,55 @@ def route_node(state: GraphState) -> GraphState:
     # TODO: default chat node if routes are identified
 
 
-# =========================(END OF NODE DEFINITIONS)=============================
+# The node that pulls from the "evil_items" collection in our Chroma Store
+def extract_items_node(state: GraphState) -> GraphState:
 
+    # Simply search the VectorDB "evil_items" collection with the user's query in state
+    query = state.get("query", "")
+    results = search(query, k=5, collection="evil_items")
+
+    # Return the documents, adding them to state
+    return {"docs":results}
+
+
+# The node that pulls from the "boss_plans" collection in our Chroma Store
+def extract_plans_node(state: GraphState) -> GraphState:
+
+    # Same pattern as the node above
+    query = state.get("query", "")
+    results = search(query, k=10, collection="boss_plans")
+    return {"docs":results}
+
+
+# The node that answers the user's query based on docs retrieved from either "extract" node
+def answer_with_context_node(state: GraphState) -> GraphState:
+
+    # This should be a pretty comfortable pattern - just talking to the LLM
+
+    # First, extract the query and docs from state
+    query = state.get("query", "")
+    docs = state.get("docs", [])
+    combined_docs = "\n\n".join(item["text"] for item in docs)
+
+    # Set up a prompt
+    prompt = (
+        f"You are an internal assistant at the Evil Scientist Corp."
+        f"You are pretty evil yourself, but still helpful."
+        f"Answer the User's Query based ONLY on the Extracted Data below."
+        f"If the data doesn't help, say you don't know."
+        f"Extracted Data:\n{combined_docs}"
+        f"User Query:\n{query}"
+        f"Answer: "
+    )
+
+    # Invoke the LLM from the service with the prompt
+    response = llm.invoke({"input":prompt})
+
+    # Return the answer, which also adds it to state
+    return {"answer":response["text"]}
+
+
+# =========================(END OF NODE DEFINITIONS)=============================
 
 # Define the function that builds and returns the graph
 # In our endpoint, we'll invoke the graph, not the LLM directly, definitely not a chain
