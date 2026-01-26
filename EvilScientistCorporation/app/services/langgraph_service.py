@@ -1,10 +1,10 @@
-from typing import TypedDict, Any
+from typing import TypedDict, Any, Annotated
 
-from langchain_core.messages import HumanMessage, AIMessage
+from langchain_core.messages import HumanMessage, AIMessage, BaseMessage
 from langchain_ollama import ChatOllama
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.constants import END
-from langgraph.graph import StateGraph
+from langgraph.graph import StateGraph, add_messages
 
 from app.services.vectordb_service import search
 
@@ -36,7 +36,9 @@ class GraphState(TypedDict, total=False): #total=False makes all fields optional
     answer: str
 
     # Previous chat interactions (for memory across LLM runs)
-    message_memory: str
+    # Note the langgraph reducer "add_messages".
+    # It helps us aggregate all the previous messages
+    message_memory: Annotated[list[BaseMessage], add_messages]
 
 
 # ==============================(NODE DEFINITIONS)===============================
