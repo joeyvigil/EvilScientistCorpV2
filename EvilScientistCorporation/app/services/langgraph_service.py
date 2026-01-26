@@ -57,7 +57,8 @@ def route_node(state: GraphState) -> GraphState:
     if any(word in query for word in ["boss", "boss's", "plan", "plans", "scheme", "schemes"]):
         return {"route":"plans"} # This return adds the route to State!
 
-    # TODO: default chat node if routes are identified
+    # Fall back to the default chat node if no routes are identified (no matching keywords)
+    return {"route":"chat"}
 
 
 # The node that pulls from the "evil_items" collection in our Chroma Store
@@ -107,6 +108,20 @@ def answer_with_context_node(state: GraphState) -> GraphState:
     # Return the answer, which also adds it to state
     return {"answer":response}
 
+# Here's the fallback general chat node (invoked if no particular route is indentified in the router node)
+def general_chat_node(state: GraphState) -> GraphState:
+
+    # Define the prompt
+    prompt = (
+        f"""You are an internal assistant at the Evil Scientist Corp.
+        You are pretty evil yourself, but still helpful.
+        Answer the User's Query to the best of your ability.
+        User Query:\n{state.get('query','')}
+        Answer: """
+    )
+
+    # Invoke the LLM and return the response (which adds it to state too)
+    return {"answer":llm.invoke(prompt).content}
 
 # =========================(END OF NODE DEFINITIONS)=============================
 
@@ -152,3 +167,4 @@ def build_graph():
 
 # Make a single graph instance (singleton) - ensure only one instance of the graph exists
 langgraph = build_graph()
+
