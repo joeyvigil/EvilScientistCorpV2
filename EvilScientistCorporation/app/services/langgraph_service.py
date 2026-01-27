@@ -178,7 +178,7 @@ def build_graph():
 
     # Define the possible terminal (finishing) points of the graph
     build.set_finish_point("answer_with_context_node")
-    build.set_finish_point("general_cnhat_ode")
+    build.set_finish_point("general_chat_node")
 
     # Compile and create the invokable graph object. We invoke this in our endpoint!
     # NOTE: we added a checkpointer to store state ACROSS INVOCATIONS

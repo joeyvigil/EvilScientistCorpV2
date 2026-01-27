@@ -82,7 +82,8 @@ def agentic_router_node(state: GraphState) -> GraphState:
             You are an internal agent that decides whether VectorDB retrieval is needed. 
             If the User is asking about product, items, recs, prices, etc., use the "extract_items" tool. 
             If the User is asking about their boss's evil plans or schemes, use the "extract_plans" tool. 
-            If neither applies, it's a general chat. DO NOT call a tool. 
+            If neither applies or the user is just stating something, it's a general chat. 
+            DO NOT call a tool for general chats. 
             If you call a tool, call EXACTLY ONE tool.
             """
         )),
@@ -161,12 +162,12 @@ def build_agentic_graph():
 
     # Register each node within the graph
     # NOTE: extract_items and extract_plans are TOOLS now, not nodes
-    build.add_node("router", agentic_router_node)
+    build.add_node("route", agentic_router_node)
     build.add_node("answer", answer_with_context_node)
     build.add_node("chat", general_chat_node)
 
     # Set our entry point node (the first one to invoke after a user query)
-    build.set_entry_point("router")
+    build.set_entry_point("route")
 
     # After the router runs, conditionally choose the next node based on "route" in state
     build.add_conditional_edges(
