@@ -11,7 +11,7 @@ from langchain_core.messages import BaseMessage, SystemMessage, HumanMessage, AI
 from langchain_core.messages.tool import tool_call
 from langchain_core.tools import tool
 from langchain_ollama import ChatOllama
-from langgraph.graph import add_messages
+from langgraph.graph import add_messages, StateGraph
 
 from app.services.vectordb_service import search
 
@@ -153,3 +153,15 @@ def general_chat_node(state: GraphState) -> GraphState:
 
 # THE GRAPH BUILDER --------------------------------
 # Mostly the same, but uses our new agentic router, and the tools are no longer nodes
+def build_agentic_graph():
+
+    # Define the graph state and the build variable
+    build = StateGraph(GraphState)
+
+    # Register each node within the graph
+    # NOTE: extract_items and extract_plans are TOOLS now, not nodes
+    build.add_node("router", agentic_router_node)
+    build.add_node("answer", answer_with_context_node)
+    build.add_node("chat", general_chat_node)
+
+    # Half done - see you after lunch!
