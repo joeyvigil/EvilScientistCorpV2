@@ -7,7 +7,8 @@ The chat nodes pretty much stay the same
 """
 from typing import TypedDict, Any, Annotated
 
-from langchain_core.messages import BaseMessage
+from langchain_core.messages import BaseMessage, SystemMessage, HumanMessage
+from langchain_core.messages.tool import tool_call
 from langchain_core.tools import tool
 from langchain_ollama import ChatOllama
 from langgraph.graph import add_messages
@@ -66,4 +67,43 @@ llm_with_tools = llm.bind_tools(TOOLS)
 
 # NODES (including our agentic router)--------------------------------------------
 
+# Here's the AGENT part - this routing node uses agentic AI to determine what tool to call, if any
+def agentic_router_node(state: GraphState) -> GraphState:
 
+    # Get the user query from State
+    query = state.get("query", "")
+
+    # Using this different chat prompting style just cuz it looks cool
+    # Feel free to use the typical prompt string like we've been doing
+    messages = [
+        SystemMessage(content=(
+            """
+            You are an internal agent that decides whether VectorDB retrieval is needed. 
+            If the User is asking about product, items, recs, prices, etc., use the "extract_items" tool. 
+            If the User is asking about their boss's evil plans or schemes, use the "extract_plans" tool. 
+            If neither applies, it's a general chat. DO NOT call a tool. 
+            If you call a tool, call EXACTLY ONE tool.
+            """
+        )),
+        HumanMessage(content=query)
+    ]
+
+    # First LLM call to decide which tool to use
+    agentic_response = llm_with_tools.invoke(messages)
+
+    # If there was no tool call, route to general chat
+    if not agentic_response.tool_calls:
+        return {"route":"chat"}
+
+    # If a tool WAS called, invoke it and store results and the appropriate route in State
+    tool_call = agentic_response.tool_calls[0] # We only expect one tool call
+    tool_name = tool_call["name"] # Extract the name of the tool that was called
+
+    # Finally, here's us actually invoking the tool by name
+    results = TOOL_MAP[tool_name].invoke({"query":query})
+
+    # Automatically set the route to the answer_with_context node
+    return {
+        "route":"answer_with_context",
+        "docs": results
+    }
