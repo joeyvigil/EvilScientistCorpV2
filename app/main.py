@@ -5,7 +5,11 @@ from fastapi import FastAPI, HTTPException
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
-from app.routers import users, items, chat, vector_ops, langgraph_ops
+from app.routers import users, items, chat, vector_ops, langgraph_ops, sql_ops
+from app.services.db_connection import Base, engine
+
+# Create DB tables on startup
+Base.metadata.create_all(bind=engine)
 
 # Set up FastAPI. We'll use this "app" variable to do FastAPI stuff below
 app = FastAPI()
@@ -31,6 +35,7 @@ app.include_router(items.router)
 app.include_router(chat.router)
 app.include_router(vector_ops.router)
 app.include_router(langgraph_ops.router)
+app.include_router(sql_ops.router)
 
 # Generic sample endpoint (GET request that just returns a message)
 @app.get("/")
